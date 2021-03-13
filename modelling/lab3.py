@@ -4,6 +4,17 @@ import itertools as it
 
 from threading import Thread
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+def show_seq(seq):
+    sns.set_style('darkgrid')
+    axis = sns.displot(seq, kde=True, rug=True, discrete=True)
+    axis.set(xlabel='Количество элементов в очереди', ylabel='Частота повторений')
+    plt.show()
+
+
 class Handler:
     is_busy = False
     iterations_until_free = 0
@@ -38,7 +49,7 @@ class Handler:
 
 def task_sender(queue):
     while True:
-        if random.randint(0,100) < 10:
+        if len(queue) > 3 and random.randint(0,100) < 10:
             queue.append(-100)
             return
         queue.append(random.randint(-5,10))
@@ -51,12 +62,24 @@ queue_len = []
 filler = Thread(target=lambda: task_sender(queue))
 filler.start()
 
+# Ждем, пока очередь не заполнится хотя бы одним элементом
+while len(queue) == 0:
+    pass
+
 start_time = time.time()
-while queue[0] != -100 or Handler.is_busy:
-    queue_len.append(len(queue))
-    if not Handler.is_busy:
-        queue_memorized.append((queue[0], time.time() - start_time))
-    Handler.handle(queue)
+
+while True:
+    try:
+        if queue[0] == -100:
+            break
+        queue_len.append(len(queue))
+        if not Handler.is_busy:
+            queue_memorized.append((queue[0], time.time() - start_time))
+        Handler.handle(queue)
+    except KeyboardInterrupt:
+        break
+    except Exception:
+        pass
 
 true_tasks = list(filter(lambda t: t[0] > 0, queue_memorized))
 do_noting_tasks = list(filter(lambda t: t[0] <= 0, queue_memorized))
@@ -66,3 +89,10 @@ do_nothing_average = sum([d[1] for d in do_noting_tasks])/len(do_noting_tasks)
 
 print('Среднее время нахождения заявки в системе:', true_tasks_average)
 print('Среднее время простоя обработчика:', do_nothing_average)
+
+print(queue_len)
+queue_len_average = sum(queue_len)/len(queue_len)
+print('Средняя длина очереди:', queue_len_average)
+print('Максимальная длина очереди:', max(queue_len))
+
+show_seq(queue_len)
