@@ -42,15 +42,18 @@ def task_sender(queue):
             queue.append(-100)
             return
         queue.append(random.randint(-5,10))
+        time.sleep(0.1)
 
 queue = []
 queue_memorized = []
+queue_len = []
 
 filler = Thread(target=lambda: task_sender(queue))
 filler.start()
 
 start_time = time.time()
-while queue[0] != -100:
+while queue[0] != -100 or Handler.is_busy:
+    queue_len.append(len(queue))
     if not Handler.is_busy:
         queue_memorized.append((queue[0], time.time() - start_time))
     Handler.handle(queue)
