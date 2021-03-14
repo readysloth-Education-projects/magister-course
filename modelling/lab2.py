@@ -48,13 +48,20 @@ def second_task():
     import math
     def rand_generator():
         while True:
+            yield [random.random() for i in range(12)]
+
+
+    def rand_generator_box_mueller():
+        while True:
             fi = random.random()
             r = random.random()
             yield math.cos(2*math.pi*fi)*math.sqrt(-2*math.log(r))
             yield math.sin(2*math.pi*fi)*math.sqrt(-2*math.log(r))
 
     random_seq = list(it.islice(rand_generator(), 100000))
-    calculate_period_and_show(random_seq)
+    random_seq_box = list(it.islice(rand_generator_box_mueller(), 100000))
+    calculate_period_and_show(random_seq_box)
+    calculate_period_and_show([sum(i) - 6 for i in random_seq])
 
 first_task()
 second_task()
