@@ -7,11 +7,12 @@ import pyopencl.array as cl_array
 from icecream import ic
 
 
+elem_count = 10
 i = np.array([2**n for n in range(2,20)])
-x = np.array(range(1,10), dtype=np.int32)
-y = np.array(range(1,10), dtype=np.int32)
-z = np.array(range(1,10), dtype=np.int32)
-Y = np.random.randint(100, size=(5,5))
+x = np.array(range(1, elem_count), dtype=np.int32)
+y = np.array(range(1, elem_count), dtype=np.int32)
+z = np.array(range(1, elem_count), dtype=np.int32)
+Y = np.random.randint(100, size=(elem_count, elem_count), dtype=np.int32)
 a = 10
 b = 10
 
@@ -52,6 +53,7 @@ y_cl = clw.bind_to_buffer(ctx, ic(y))
 z_cl = clw.bind_to_buffer(ctx, ic(z))
 Y_cl = clw.bind_to_buffer(ctx, ic(Y))
 
+
 def calculate_first_task(print_intermediate=False):
     if not print_intermediate:
         ic = lambda e: e
@@ -73,6 +75,23 @@ def calculate_first_task(print_intermediate=False):
 
     return time1 + time2 + time3 + time4
 
+
+def calculate_second_task(print_intermediate=False):
+    if not print_intermediate:
+        ic = lambda e: e
+
+    # a * x
+    output_array, time = clw.execute_kernel(mul_by_coeff, ctx, queue, x, x_cl, np.int32(a))
+    a_mul_x_cl = clw.bind_to_buffer(ctx, ic(output_array))
+
+    for row in Y:
+        row_cl = clw.bind_to_buffer(ctx, ic(row))
+        output_array, time1 = clw.execute_kernel(mul_arrays, ctx, queue,
+                                                 row, a_mul_x_cl, row_cl)
+        time += time1
+    return time
+
+
 for count in i:
     print(f"[{count}] Затраченное время в секундах",
-          sum([calculate_first_task() for i in range(count)]) // 10**9)
+          sum([calculate_second_task() for i in range(count)]) // 10**9)
