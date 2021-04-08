@@ -73,11 +73,6 @@ def calculate_first_task(print_intermediate=False):
 
     return time1 + time2 + time3 + time4
 
-print("Затраченное время в секундах", sum([calculate_first_task() for i in range(2**16)]) // 10**9)
-
-
-#mul_by_coeff(queue, output_array.shape, None, y_cl, z_cl, out_array_cl)
-#
-#result = np.empty_like(output_array)
-#cl.enqueue_copy(queue, result, out_array_cl)
-#ic(result)
+for count in i:
+    print(f"[{count}] Затраченное время в секундах",
+          sum([calculate_first_task() for i in range(count)]) // 10**9)
