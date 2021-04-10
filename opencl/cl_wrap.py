@@ -30,7 +30,7 @@ def bind_to_buffer(ctx, hostbuf):
 def execute_kernel(krnl, ctx, queue, sample, *args):
     out_array_cl = get_w_buffer(ctx, sample.nbytes)
     timer_start = perf_counter_ns()
-    krnl(queue, sample.shape, None, *args, out_array_cl)
+    krnl(queue, sample.shape, None, *args, out_array_cl).wait()
     timer_stop = perf_counter_ns()
     output_array = np.empty_like(sample)
     cl.enqueue_copy(queue, output_array, out_array_cl)
