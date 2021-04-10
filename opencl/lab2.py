@@ -33,8 +33,7 @@ def process_image(cl_text, function_name, output_img_name):
     return time
 
 def make_grayscale():
-
-    process_image( """
+    time = process_image( """
     #define max_of_three(m,n,p) ( (m) > (n) ? ((m) > (p) ? (m) : (p)) : ((n) > (p) ? (n) : (p)))
     #define min_of_three(m,n,p) ( (m) < (n) ? ((m) < (p) ? (m) : (p)) : ((n) < (p) ? (n) : (p)))
 
@@ -55,5 +54,23 @@ def make_grayscale():
       gray_row[rgb_chunk_start+2] = gray_color;
     }""", "make_grayscale", "grayscale.jpg")
 
+    return time
 
-make_grayscale()
+def make_negative():
+    time = process_image( """
+    __kernel void make_negative(__global char *rgb_row,
+                                __global char *negative_row)
+    {
+      int gid = get_global_id(0);
+      int rgb_chunk_start = gid * 3;
+      int max_intensity = 255 - 1;
+      negative_row[rgb_chunk_start]   = max_intensity - rgb_row[rgb_chunk_start];
+      negative_row[rgb_chunk_start+1] = max_intensity - rgb_row[rgb_chunk_start+1];
+      negative_row[rgb_chunk_start+2] = max_intensity - rgb_row[rgb_chunk_start+2];
+    }""", "make_negative", "negative.jpg")
+
+    return time
+
+
+ic(make_grayscale())
+ic(make_negative())
