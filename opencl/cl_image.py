@@ -7,6 +7,12 @@ from PIL import Image
 def process_image(image, cl_text, function_name, output_img_name, *args):
     image = Image.open(image)
     data = np.asarray(image)
+    new_data, time = process_buffer(cl_text, data, function_name, *args)
+    Image.fromarray(new_data).save(output_img_name)
+
+    return time
+
+def process_buffer(cl_text, data, function_name, *args):
     ctx, queue = clw.get_context_and_queue()
     prog = clw.build_program(ctx, cl_text)
 
@@ -34,6 +40,4 @@ def process_image(image, cl_text, function_name, output_img_name, *args):
         columns.append(processed)
 
     new_data = np.array(columns)
-    Image.fromarray(new_data).save(output_img_name)
-
-    return time
+    return new_data, time
