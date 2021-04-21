@@ -4,7 +4,7 @@ import numpy as np
 
 from PIL import Image
 
-def process_image(image, cl_text, function_name, output_img_name):
+def process_image(image, cl_text, function_name, output_img_name, *args):
     image = Image.open(image)
     data = np.asarray(image)
     ctx, queue = clw.get_context_and_queue()
@@ -16,7 +16,7 @@ def process_image(image, cl_text, function_name, output_img_name):
 
         flatten_rows = rows.flatten()
         row_cl = clw.bind_to_buffer(ctx, flatten_rows)
-        p_row, time = clw.execute_kernel(func, ctx, queue, flatten_rows, row_cl)
+        p_row, time = clw.execute_kernel(func, ctx, queue, flatten_rows, row_cl, *args)
 
         return np.array(np.array_split(p_row, len(p_row) // 3)), time;
 
