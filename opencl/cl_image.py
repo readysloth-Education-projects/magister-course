@@ -13,10 +13,16 @@ def process_image(image, cl_text, function_name, output_img_name, *args):
     cl_func = getattr(prog, function_name)
 
     def process_rows(func, rows):
-
         flatten_rows = rows.flatten()
+        flatten_rows_len = np.int32(flatten_rows.shape[0])
         row_cl = clw.bind_to_buffer(ctx, flatten_rows)
-        p_row, time = clw.execute_kernel(func, ctx, queue, flatten_rows, row_cl, *args)
+        p_row, time = clw.execute_kernel(func,
+                                         ctx,
+                                         queue,
+                                         flatten_rows,
+                                         flatten_rows_len,
+                                         row_cl,
+                                         *args)
 
         return np.array(np.array_split(p_row, len(p_row) // 3)), time;
 

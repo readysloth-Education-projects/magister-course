@@ -19,7 +19,8 @@ def box_blur():
 
     #define GET_COLOR_INDEX(COLOR, PTR, pixel_index) PTR[pixel_index + COLOR]
 
-    __kernel void box_blur(__global char *rgb_row,
+    __kernel void box_blur(int rgb_row_len,
+                           __global char *rgb_row,
                            int blur_size,
                            __global char *blur_row)
     {
@@ -31,6 +32,10 @@ def box_blur():
       int CREATE_SUM_NAME(RED) = 0;
       int CREATE_SUM_NAME(GREEN) = 0;
       int CREATE_SUM_NAME(BLUE) = 0;
+
+      if(chunk_start > rgb_row_len){
+        return;
+      }
 
       #define FOREACH_PIXEL_IN_CHUNK(PIXEL_INDEX, BODY) \
         for(int PIXEL_INDEX = chunk_start; PIXEL_INDEX < chunk_end; PIXEL_INDEX += 3){ \
