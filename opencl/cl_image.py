@@ -12,23 +12,35 @@ def process_image(image, cl_text, function_name, output_img_name, *args):
 
     return time
 
-def process_buffer(cl_text, data, function_name, *args):
+def process_buffer(cl_text, data, function_name, *args, **kwargs):
     ctx, queue = clw.get_context_and_queue()
     prog = clw.build_program(ctx, cl_text)
 
-    cl_func = getattr(prog, function_name)
+    if kwargs['multiple'] == True:
+        cl_func = [getattr(prog, f) for f in function_name]
+    else:
+        cl_func = getattr(prog, function_name)
 
     def process_rows(func, rows):
         flatten_rows = rows.flatten()
         flatten_rows_len = np.int32(flatten_rows.shape[0])
         row_cl = clw.bind_to_buffer(ctx, flatten_rows)
-        p_row, time = clw.execute_kernel(func,
-                                         ctx,
-                                         queue,
-                                         flatten_rows,
-                                         flatten_rows_len,
-                                         row_cl,
-                                         *args)
+        if kwargs['multiple'] == True:
+            p_row, time = clw.execute_n_kernels(func,
+                                                ctx,
+                                                queue,
+                                                flatten_rows,
+                                                flatten_rows_len,
+                                                row_cl,
+                                                *args)
+        else:
+            p_row, time = clw.execute_kernel(func,
+                                             ctx,
+                                             queue,
+                                             flatten_rows,
+                                             flatten_rows_len,
+                                             row_cl,
+                                             *args)
 
         return np.array(np.array_split(p_row, len(p_row) // 3)), time;
 

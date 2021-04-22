@@ -35,3 +35,19 @@ def execute_kernel(krnl, ctx, queue, sample, *args):
     output_array = np.empty_like(sample)
     cl.enqueue_copy(queue, output_array, out_array_cl)
     return output_array, timer_stop - timer_start
+
+
+def execute_n_kernels(krnls, ctx, queue, sample, *args):
+    out_array_cl = get_w_buffer(ctx, sample.nbytes)
+    wait_events = []
+    for krnl in krnls:
+        wait_events.append(krnl(queue, sample.shape, None, *args, out_array_cl))
+
+    timer_start = perf_counter_ns()
+    for e in wait_events:
+        e.wait()
+    timer_stop = perf_counter_ns()
+
+    output_array = np.empty_like(sample)
+    cl.enqueue_copy(queue, output_array, out_array_cl)
+    return output_array, timer_stop - timer_start
