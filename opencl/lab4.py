@@ -118,51 +118,66 @@ def process_image_via_pipes(image_name):
     image = Image.open(image_name)
     data = np.asarray(image)
     blur_and_grey_text = f"""
-                        pipe char gray_pipe __attribute__((xcl_reqd_pipe_depth(1024)));
-                        pipe char blur_pipe __attribute__((xcl_reqd_pipe_depth(1024)));
+                        #define SPIN_READ_PIPE(PIPE, DEST)  while(read_pipe(PIPE, &DEST));
+                        #define SPIN_WRITE_PIPE(PIPE, DEST) while(write_pipe(PIPE, &DEST));
 
                         {box_blur_program['defines']}
-                        {box_blur_program['signature']}
+                        __kernel void box_blur(int rgb_row_len,
+                                               __global char *rgb_row,
+                                               int blur_size,
+                                               write_only pipe char gray_pipe,
+                                               read_only pipe char blur_pipe,
+                                               __global char *blur_row)
                         {{
                           {box_blur_program['body']}
                           FOREACH_PIXEL_IN_CHUNK(pixel_index,
-                                                 write_pipe(gray_pipe, &GET_COLOR_INDEX(RED, blur_row, pixel_index));
-                                                 write_pipe(gray_pipe, &GET_COLOR_INDEX(GREEN, blur_row, pixel_index));
-                                                 write_pipe(gray_pipe, &GET_COLOR_INDEX(BLUE, blur_row, pixel_index));)
+                                                 SPIN_WRITE_PIPE(gray_pipe, GET_COLOR_INDEX(RED, blur_row, pixel_index));
+                                                 SPIN_WRITE_PIPE(gray_pipe, GET_COLOR_INDEX(GREEN, blur_row, pixel_index));
+                                                 SPIN_WRITE_PIPE(gray_pipe, GET_COLOR_INDEX(BLUE, blur_row, pixel_index));)
 
                           mem_fence(CLK_GLOBAL_MEM_FENCE);
 
                           FOREACH_PIXEL_IN_CHUNK(pixel_index,
-                                                 read_pipe(blur_pipe, &GET_COLOR_INDEX(RED, blur_row, pixel_index));
-                                                 read_pipe(blur_pipe, &GET_COLOR_INDEX(GREEN, blur_row, pixel_index));
-                                                 read_pipe(blur_pipe, &GET_COLOR_INDEX(BLUE, blur_row, pixel_index));)
+                                                 SPIN_READ_PIPE(blur_pipe, GET_COLOR_INDEX(RED, blur_row, pixel_index));
+                                                 SPIN_READ_PIPE(blur_pipe, GET_COLOR_INDEX(GREEN, blur_row, pixel_index));
+                                                 SPIN_READ_PIPE(blur_pipe, GET_COLOR_INDEX(BLUE, blur_row, pixel_index));)
                         }}
 
                         {grayscale_program['defines']}
-                         __kernel void make_grayscale()
+                         __kernel void make_grayscale(int rgb_row_len,
+                                                      __global char *rgb_row,
+                                                      int blur_size,
+                                                      read_only pipe char gray_pipe,
+                                                      write_only pipe char blur_pipe,
+                                                      __global char *blur_row)
                          {{
                            int gid = get_global_id(0);
-                           int red, green, blue;
-                           read_pipe(gray_pipe, &red);
-                           read_pipe(gray_pipe, &green);
-                           read_pipe(gray_pipe, &blue);
+                           char red, green, blue;
+                           SPIN_READ_PIPE(gray_pipe, red);
+                           SPIN_READ_PIPE(gray_pipe, green);
+                           SPIN_READ_PIPE(gray_pipe, blue);
 
                            char max_light = max_of_three(red, green, blue);
                            char min_light = min_of_three(red, green, blue);
                            char gray_color = (min_light + max_light) / 2;
 
-                           write_pipe(blur_pipe, gray_color);
-                           write_pipe(blur_pipe, gray_color);
-                           write_pipe(blur_pipe, gray_color);
+                           SPIN_WRITE_PIPE(blur_pipe, gray_color);
+                           SPIN_WRITE_PIPE(blur_pipe, gray_color);
+                           SPIN_WRITE_PIPE(blur_pipe, gray_color);
                         }}
                         """
 
+    ctx, _ = clw.get_context_and_queue()
+    pipe = clw.get_rw_pipe(ctx)
 
     blurred_and_grey_data, blurred_and_grey_time = process_buffer(blur_and_grey_text,
                                                                   data,
                                                                   [box_blur_program['kernel'],
                                                                    grayscale_program['kernel']],
-                                                                  np.int32(10))
+                                                                  np.int32(10),
+                                                                  pipe,
+                                                                  pipe,
+                                                                  multiple=True)
 
     Image.fromarray(blurred_and_grey_data).save("blurred_and_gray.jpg")
 
