@@ -16,7 +16,7 @@ def process_buffer(cl_text, data, function_name, *args, **kwargs):
     ctx, queue = clw.get_context_and_queue()
     prog = clw.build_program(ctx, cl_text)
 
-    if kwargs['multiple'] == True:
+    if 'multiple' in kwargs and kwargs['multiple'] == True:
         cl_func = [getattr(prog, f) for f in function_name]
     else:
         cl_func = getattr(prog, function_name)
@@ -25,7 +25,7 @@ def process_buffer(cl_text, data, function_name, *args, **kwargs):
         flatten_rows = rows.flatten()
         flatten_rows_len = np.int32(flatten_rows.shape[0])
         row_cl = clw.bind_to_buffer(ctx, flatten_rows)
-        if kwargs['multiple'] == True:
+        if 'multiple' in kwargs and kwargs['multiple'] == True:
             p_row, time = clw.execute_n_kernels(func,
                                                 ctx,
                                                 queue,
