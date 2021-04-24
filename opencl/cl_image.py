@@ -14,7 +14,8 @@ def process_image(image, cl_text, function_name, output_img_name, *args):
 
 def process_buffer(cl_text, data, function_name, *args, **kwargs):
     ctx, queue = clw.get_context_and_queue()
-    prog = clw.build_program(ctx, cl_text)
+    build_options = kwargs['options'] if 'options' in kwargs else None
+    prog = clw.build_program(ctx, cl_text, build_options)
 
     if 'multiple' in kwargs and kwargs['multiple'] == True:
         cl_func = [getattr(prog, f) for f in function_name]

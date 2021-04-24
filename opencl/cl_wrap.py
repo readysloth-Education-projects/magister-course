@@ -18,8 +18,8 @@ def get_context_and_queue():
     return (ctx, queue)
 
 
-def build_program(ctx, kernel_text):
-    return cl.Program(ctx, kernel_text).build(options=['-cl-std=CL2.0'])
+def build_program(ctx, kernel_text, options=None):
+    return cl.Program(ctx, kernel_text).build(options=options if options else [])
 
 
 def get_rw_buffer(ctx, size):
@@ -51,12 +51,9 @@ def execute_kernel(krnl, ctx, queue, sample, *args):
 def execute_n_kernels(krnls, ctx, queue, sample, *args):
     out_array_cl = get_w_buffer(ctx, sample.nbytes)
     wait_events = []
-    for krnl in krnls:
-        wait_events.append(krnl(queue, sample.shape, None, *args, out_array_cl))
-
     timer_start = perf_counter_ns()
-    for e in wait_events:
-        e.wait()
+    for krnl in krnls:
+        krnl(queue, sample.shape, None, *args, out_array_cl).wait()
     timer_stop = perf_counter_ns()
 
     output_array = np.empty_like(sample)
