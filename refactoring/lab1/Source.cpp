@@ -4,6 +4,7 @@
 #include <tuple>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include <functional>
 
 
@@ -75,14 +76,13 @@ void print_matrix(std::vector<std::vector<int>> &matrix){
 int main()
 {
 	srand(time(NULL));
-	int l = 2;
+	int extended_size = 2;
 	std::cout << "Вас приветствует программа\nбыстрого перемножения матриц методом Штрассена\n\n";
 	auto first_matrix_dimensions = get_dimensions("Введите размеры первой матрицы");
 	auto second_matrix_dimensions = get_dimensions("Введите размеры второй матрицы");
 
 	auto first_matrix = new std::vector<std::vector<int>>();
 	auto second_matrix = new std::vector<std::vector<int>>();
-
 
 
 	std::function<bool(int)> failure_choice = [](int choice){return !(1 == choice || choice == 2);};
@@ -115,51 +115,28 @@ int main()
 	std::cout << "Матрица 2" << std::endl;
 	print_matrix(second_matrix);
 
-	///////////////////////////////////////////////////////////////////////////////
-	/////////////////Приведение матриц к требуемому размеру////////////////////////
-	///////////////////////////////////////////////////////////////////////////////
 
-	while (l < n1 || l < n2 || l < m1 || l < m2)
-		l *= 2;
-	int** M3 = new int* [l];
-	for (int i = 0; i < l; i++)
-	{
-		M3[i] = new int[l];
-		for (int j = 0; j < l; j++)
-			M3[i][j] = 0;
+	auto first_matrix_max_dimension = std::max_element(first_matrix_dimensions.begin(),
+																										 first_matrix_dimensions.end())
+	auto second_matrix_max_dimension = std::max_element(second_matrix_dimensions.begin(),
+																										  second_matrix_dimensions.end())
+	while (extended_size < first_matrix_dimensions || extended_size < second_matrix_dimensions){
+		extended_size *= 2;
 	}
-	int** M4 = new int* [l];
-	for (int i = 0; i < l; i++)
-	{
-		M4[i] = new int[l];
-		for (int j = 0; j < l; j++)
-			M4[i][j] = 0;
+
+	first_matrix.resize(extended_size, std::vector<int>);
+	for (auto &row : first_matrix){
+			row.resize(extended_size);
 	}
-	for (int i = 0; i < n1; i++)
-	{
-		for (int j = 0; j < m1; j++)
-			M3[i][j] = M1[i][j];
+	second_matrix.resize(extended_size, std::vector<int>);
+	for (auto &row : second_matrix){
+			row.resize(extended_size);
 	}
-	for (int i = 0; i < n2; i++)
-	{
-		for (int j = 0; j < m2; j++)
-			M4[i][j] = M2[i][j];
-	}
-	std::cout << "Приведенные матрицы\n";
-	std::cout << "\nМатрица 1\n\n";
-	for (int i = 0; i < l; i++)
-	{
-		for (int j = 0; j < l; j++)
-			std::cout << M3[i][j] << " ";
-		std::cout << endl;
-	}
-	std::cout << "\nМатрица 2\n\n";
-	for (int i = 0; i < l; i++)
-	{
-		for (int j = 0; j < l; j++)
-			std::cout << M4[i][j] << " ";
-		std::cout << endl;
-	}
+
+	std::cout << "Матрица 1" << std::endl;
+	print_matrix(first_matrix);
+	std::cout << "Матрица 2" << std::endl;
+	print_matrix(second_matrix);
 
 	///////////////////////////////////////////////////////////////////////////////
 	///////////////Разбиение матриц на подматрицы и их заполнение//////////////////
