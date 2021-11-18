@@ -41,11 +41,41 @@ std::tuple<int, int> get_dimensions(const std::string &out_text){
 }
 
 
+void populate_row(std::vector<int> &row,
+									std::function<int> &populate_function,
+									int count){
+	for(int i = 0; i < count; i++){
+		row.push_back(populate_function());
+	}
+}
+
+
+void populate_matrix(std::vector<std::vector<int>> &matrix,
+										 std::tuple<int,int> dimensions,
+										 std::function<int> &populate_function){
+	int x_dim = std::get<0>(dimensions);
+	int y_dim = std::get<1>(dimensions);
+	for(int i = 0; i < x_dim; i++){
+		auto row = new std::vector<int>();
+		matrix.push_back(row);
+		populate_row(row, populate_function, y_dim);
+	}
+}
+
+void print_matrix(std::vector<std::vector<int>> &matrix){
+	for(auto &row : matrix){
+		for(auto &elem : row){
+			std::cout << elem << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+
 int main()
 {
 	srand(time(NULL));
 	int l = 2;
-	system("chcp 1251");
 	std::cout << "Вас приветствует программа\nбыстрого перемножения матриц методом Штрассена\n\n";
 	auto first_matrix_dimensions = get_dimensions("Введите размеры первой матрицы");
 	auto second_matrix_dimensions = get_dimensions("Введите размеры второй матрицы");
@@ -54,59 +84,36 @@ int main()
 	auto second_matrix = new std::vector<std::vector<int>>();
 
 
-	do
+
+	std::function<bool(int)> failure_choice = [](int choice){return !(1 == choice || choice == 2);};
+	int choice = get_user_input<int, 1>("Выберите способ заполнения матриц\n1 - Вручную \n2 - Случайным образом\n",
+																			"Введите 1 или 2",
+																			failure_choice)[0];
+
+	std::function<int> populate_function = null;
+
+	switch (choice)
 	{
-		std::cout << "Выберите способ заполнения матриц\n" <<
-			"1 - Вручную \n2 - Случайным образом\n";
-		std::cin >> k;
-	} while (k < 1 || k > 2);
-	switch (k)
-	{
-	case 1:
-		for (int i = 0; i < n1; i++)
-			for (int j = 0; j < m1; j++)
-				std::cin >> M1[i][j];
-		for (int i = 0; i < n2; i++)
-			for (int j = 0; j < m2; j++)
-				std::cin >> M2[i][j];
-		std::cout << "\nМатрица 1\n\n";
-		for (int i = 0; i < n1; i++)
-		{
-			for (int j = 0; j < m1; j++)
-				std::cout << M1[i][j] << " ";
-			std::cout << endl;
-		}
-		std::cout << "\nМатрица 2\n\n";
-		for (int i = 0; i < n2; i++)
-		{
-			for (int j = 0; j < m2; j++)
-				std::cout << M2[i][j] << " ";
-			std::cout << endl;
-		}
+		case 1:
+			std::function<int> populate_function = [](){int value; std::cin >> value; return value;};
 		break;
 	case 2:
-		for (int i = 0; i < n1; i++)
-			for (int j = 0; j < m1; j++)
-				M1[i][j] = rand() % 10;
-		for (int i = 0; i < n2; i++)
-			for (int j = 0; j < m2; j++)
-				M2[i][j] = rand() % 10;
-		std::cout << "\nМатрица 1\n\n";
-		for (int i = 0; i < n1; i++)
-		{
-			for (int j = 0; j < m1; j++)
-				std::cout << M1[i][j] << " ";
-			std::cout << endl;
-		}
-		std::cout << "\nМатрица 2\n\n";
-		for (int i = 0; i < n2; i++)
-		{
-			for (int j = 0; j < m2; j++)
-				std::cout << M2[i][j] << " ";
-			std::cout << endl;
-		}
+			std::function<int> populate_function = [](){return rand()%10;};
 		break;
 	}
+	std::cout << "Заполнение матрицы 1" << std::endl;
+	populate_matrix(first_matrix,
+									first_matrix_dimensions,
+									populate_function);
+	std::cout << "Матрица 1" << std::endl;
+	print_matrix(first_matrix);
+
+	std::cout << "Заполнение матрицы 2" << std::endl;
+	populate_matrix(second_matrix,
+									second_matrix_dimensions,
+									populate_function);
+	std::cout << "Матрица 2" << std::endl;
+	print_matrix(second_matrix);
 
 	///////////////////////////////////////////////////////////////////////////////
 	/////////////////Приведение матриц к требуемому размеру////////////////////////
