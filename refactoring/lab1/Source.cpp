@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <functional>
 
+typedef std::vector<int> row_t
+typedef std::vector<row_t> matrix_t
 
 template<typename IT, int Count>
 std::vector<IT> get_user_input(const std::string &out_text,
@@ -42,28 +44,28 @@ std::tuple<int, int> get_dimensions(const std::string &out_text){
 }
 
 
-void populate_row(std::vector<int> &row,
-									std::function<int> &populate_function,
-									int count){
+void populate_row(row_t &row,
+									int count,
+									std::function<int> &populate_function){
 	for(int i = 0; i < count; i++){
 		row.push_back(populate_function());
 	}
 }
 
 
-void populate_matrix(std::vector<std::vector<int>> &matrix,
+void populate_matrix(matrix_t &matrix,
 										 std::tuple<int,int> dimensions,
 										 std::function<int> &populate_function){
 	int x_dim = std::get<0>(dimensions);
 	int y_dim = std::get<1>(dimensions);
 	for(int i = 0; i < x_dim; i++){
-		auto row = new std::vector<int>();
+		auto row = new row_t();
 		matrix.push_back(row);
-		populate_row(row, populate_function, y_dim);
+		populate_row(row, y_dim, populate_function);
 	}
 }
 
-void print_matrix(std::vector<std::vector<int>> &matrix){
+void print_matrix(matrix_t &matrix){
 	for(auto &row : matrix){
 		for(auto &elem : row){
 			std::cout << elem << " ";
@@ -81,8 +83,8 @@ int main()
 	auto first_matrix_dimensions = get_dimensions("Введите размеры первой матрицы");
 	auto second_matrix_dimensions = get_dimensions("Введите размеры второй матрицы");
 
-	auto first_matrix = new std::vector<std::vector<int>>();
-	auto second_matrix = new std::vector<std::vector<int>>();
+	auto first_matrix = new matrix_t();
+	auto second_matrix = new matrix_t();
 
 
 	std::function<bool(int)> failure_choice = [](int choice){return !(1 == choice || choice == 2);};
@@ -124,11 +126,11 @@ int main()
 		extended_size *= 2;
 	}
 
-	first_matrix.resize(extended_size, std::vector<int>);
+	first_matrix.resize(extended_size, row_t);
 	for (auto &row : first_matrix){
 			row.resize(extended_size);
 	}
-	second_matrix.resize(extended_size, std::vector<int>);
+	second_matrix.resize(extended_size, row_t);
 	for (auto &row : second_matrix){
 			row.resize(extended_size);
 	}
