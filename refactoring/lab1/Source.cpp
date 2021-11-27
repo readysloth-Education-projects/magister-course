@@ -216,13 +216,30 @@ int main()
 		{
 			for (int z = 0; z < extended_size / 2; z++)
 			{
-				p1[x_dim][y_dim] += (std::get<0>(first_part_matrix_tuple)[x_dim][z] + std::get<3>(first_part_matrix_tuple)[x_dim][z]) * (std::get<0>(second_part_matrix_tuple)[z][y_dim] + std::get<3>(second_part_matrix_tuple)[z][y_dim]);
-				p2[x_dim][y_dim] += (std::get<2>(first_part_matrix_tuple)[x_dim][z] + std::get<3>(first_part_matrix_tuple)[x_dim][z]) * std::get<0>(second_part_matrix_tuple)[z][y_dim];
-				p3[x_dim][y_dim] += std::get<0>(first_part_matrix_tuple)[x_dim][z] * (std::get<1>(second_part_matrix_tuple)[z][y_dim] - std::get<3>(second_part_matrix_tuple)[z][y_dim]);
-				p4[x_dim][y_dim] += std::get<3>(first_part_matrix_tuple)[x_dim][z] * (std::get<2>(second_part_matrix_tuple)[z][y_dim] - std::get<0>(second_part_matrix_tuple)[z][y_dim]);
-				p5[x_dim][y_dim] += (std::get<0>(first_part_matrix_tuple)[x_dim][z] + std::get<1>(first_part_matrix_tuple)[x_dim][z]) * std::get<3>(second_part_matrix_tuple)[z][y_dim];
-				p6[x_dim][y_dim] += (std::get<2>(first_part_matrix_tuple)[x_dim][z] - std::get<0>(first_part_matrix_tuple)[x_dim][z]) * (std::get<0>(second_part_matrix_tuple)[z][y_dim] + std::get<1>(second_part_matrix_tuple)[z][y_dim]);
-				p7[x_dim][y_dim] += (std::get<1>(first_part_matrix_tuple)[x_dim][z] - std::get<3>(first_part_matrix_tuple)[x_dim][z]) * (std::get<2>(second_part_matrix_tuple)[z][y_dim] + std::get<3>(second_part_matrix_tuple)[z][y_dim]);
+				#define GET_ELEMENT_XDIM(TUPLE, I) std::get<I>(TUPLE)[x_dim][z]
+				#define GET_ELEMENT_YDIM(TUPLE, I) std::get<I>(TUPLE)[z][y_dim]
+
+				p1[x_dim][y_dim] += (GET_ELEMENT_XDIM(first_part_matrix_tuple, 0) + GET_ELEMENT_XDIM(first_part_matrix_tuple, 3)) \
+														* (GET_ELEMENT_YDIM(second_part_matrix_tuple, 0) + GET_ELEMENT_YDIM(second_part_matrix_tuple, 3));
+
+				p2[x_dim][y_dim] += (GET_ELEMENT_XDIM(first_part_matrix_tuple, 2) + GET_ELEMENT_XDIM(first_part_matrix_tuple, 3)) \
+														* GET_ELEMENT_YDIM(second_part_matrix_tuple, 0);
+
+				p3[x_dim][y_dim] += GET_ELEMENT_XDIM(first_part_matrix_tuple, 0) \
+														* (GET_ELEMENT_YDIM(second_part_matrix_tuple, 1) - GET_ELEMENT_YDIM(second_part_matrix_tuple, 3));
+
+				p4[x_dim][y_dim] += GET_ELEMENT_XDIM(first_part_matrix_tuple, 3) \
+														* (GET_ELEMENT_YDIM(second_part_matrix_tuple, 2) - GET_ELEMENT_YDIM(second_part_matrix_tuple, 0));
+
+				p5[x_dim][y_dim] += (GET_ELEMENT_XDIM(first_part_matrix_tuple, 0) + GET_ELEMENT_XDIM(first_part_matrix_tuple, 1)) \
+														* GET_ELEMENT_YDIM(second_part_matrix_tuple, 3);
+
+				p6[x_dim][y_dim] += (GET_ELEMENT_XDIM(first_part_matrix_tuple, 2) - GET_ELEMENT_XDIM(first_part_matrix_tuple, 0)) \
+														* (GET_ELEMENT_YDIM(second_part_matrix_tuple, 0) + GET_ELEMENT_YDIM(second_part_matrix_tuple, 1));
+
+				p7[x_dim][y_dim] += (GET_ELEMENT_XDIM(first_part_matrix_tuple, 1) - GET_ELEMENT_XDIM(first_part_matrix_tuple, 3)) \
+														* (GET_ELEMENT_YDIM(second_part_matrix_tuple, 2) + GET_ELEMENT_YDIM(second_part_matrix_tuple, 3));
+
 			}
 		}
 	}
