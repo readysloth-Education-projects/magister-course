@@ -123,7 +123,7 @@ void main() {
 
 	ANIMAL::print(); 
 
-	// Подсчет стоимости содержания животных
+	// РџРѕРґСЃС‡РµС‚ СЃС‚РѕРёРјРѕСЃС‚Рё СЃРѕРґРµСЂР¶Р°РЅРёСЏ Р¶РёРІРѕС‚РЅС‹С…
 	printf("\nRation value: %d\n", cat->count * mammals_food.price +
 		crow->count * birds_food.price + elk->count * hoofeds_fod.price);
 
