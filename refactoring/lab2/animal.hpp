@@ -14,7 +14,6 @@ public:
 	Animal(const char *type) { this->type = type; }
 	Animal(const Animal &src) { this->type = src.type; }
 	std::string gettype();
-	void settype(char *);
 	virtual void show(void) = 0;
 	static int count;
 };

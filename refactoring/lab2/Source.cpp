@@ -9,9 +9,6 @@ int main() {
 	auto cats = ZooAnimal("Cat", 10);
 	auto crows = ZooAnimal("Crow", 25);
 	auto elks = ZooAnimal("Elk", 2);
-	cats.show();
-	crows.show();
-	elks.show();
 
 	FoodPrice cat_food(200);
 	FoodPrice crow_food(50);
