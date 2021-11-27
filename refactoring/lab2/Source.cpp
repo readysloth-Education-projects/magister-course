@@ -1,56 +1,28 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 
 #include "animal.hpp"
 
-const int size = 8;
+typedef int FoodPrice;
 
-class Food {
-public:
-	int price;
-	Food() : price(0) {}
-	Food(int price) { setprice(price); }
-	~Food() {}
-	void setprice(int);
-};
 
-void Food::setprice(int price) {
-	this->price = price;
-}
+int main() {
+	auto cats = ZooAnimal("Cat", 10);
+	auto crows = ZooAnimal("Crow", 25);
+	auto elks = ZooAnimal("Elk", 2);
+	cats.show();
+	crows.show();
+	elks.show();
 
-void main() {
-	char* animal = new char[10];
-	strcpy(animal, "Cat");
-	Mammal *cat = new Mammal(animal, 10);
-	cat->show();
+	FoodPrice cat_food(200);
+	FoodPrice crow_food(50);
+	FoodPrice elk_food(cat_food * 5);
 
-	strcpy(animal, "Crow");
-	Bird *crow = new Bird(animal, 25);
-	crow->show();
-
-	strcpy(animal, "Elk");
-	Hoofed *elk = new Hoofed(animal, 2);
-	elk->show();
-
-	Food mammals_food(200);
-	Food birds_food(50);
-	Food hoofeds_fod(mammals_food.price * 5);
-
-	cat->add();
-	crow->add();
-	elk->add();
-
-	Animal::print();
+	show_zoo();
 
 	// Подсчет стоимости содержания животных
-	printf("\nRation value: %d\n", cat->count * mammals_food.price +
-		crow->count * birds_food.price + elk->count * hoofeds_fod.price);
-
-	delete elk;
-	delete crow;
-	delete cat;
-	delete animal;
-
-	system("pause");
+	std::cout << "Ration expenses " \
+					  << cats.get_count() * cat_food + \
+							 crows.get_count() * crow_food + \
+							 elks.get_count() * elk_food;
+	return 0;
 }
