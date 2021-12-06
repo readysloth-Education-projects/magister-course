@@ -1,6 +1,18 @@
-#include <iostream>
 #include <cmath>
+#include <string>
+#include <sstream>
+#include <iostream>
+
+#include "utest.h"
+
 using namespace std;
+
+stringstream COUT;
+
+// Переопределяем с помощью препроцессора cout из iostream
+// на наш stringstream COUT
+#define cout COUT
+
 
 void func(double a, double b, double c, double d, double e, double f)
 {
@@ -110,10 +122,48 @@ if ((a == 0) && (b == 0) && (c == 0) && (d == 0) && (e == 0) && (f == 0))
 
 }
 
-int main()
-{
-	double a, b, c, d, e, f;
-	cin >> a >> b >> c >> d >> e >> f;
-	func(a, b, c, d, e, f);
-	return 0;
+// Возвращаем прежний cout
+#undef cout
+
+#define ASSERT_COUT(VALUE) \
+	cout << "EXECUTION VALUE: " << COUT.str() << endl; \
+	cout << "EXPECTED VALUE: " << VALUE << endl; \
+	ASSERT_TRUE(COUT.str() == VALUE); \
+	COUT.str("");
+
+UTEST_MAIN();
+
+UTEST(func, all_zero){
+	func(0,0,0,0,0,0);
+	ASSERT_COUT("5");
+}
+
+
+UTEST(func, single_solution){
+	func(2,3,5,-2,12,11);
+	ASSERT_COUT("2 3 2");
+}
+
+
+UTEST(func, infinite_solutions_linear){
+	func(3,-2,6,-4,5,10);
+	ASSERT_COUT("1 1.5 -2.5");
+}
+
+
+UTEST(func, no_roots){
+	func(1,2,1,2,1,2);
+	ASSERT_COUT("0");
+}
+
+
+UTEST(func, any_x){
+	func(0,1,0,1,1,1);
+	ASSERT_COUT("4 1");
+}
+
+
+UTEST(func, any_y){
+	func(1,0,1,0,1,1);
+	ASSERT_COUT("3 1");
 }
